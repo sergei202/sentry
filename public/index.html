@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sentry</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<!-- <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	<script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+	<script src="bower_components/json-formatter/dist/json-formatter.min.js"></script>
+	<script src="bower_components/angular-socket-io/socket.min.js"></script> -->
+	<script src="/socket.io/socket.io.js"></script>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+
+	<style>
+		body {margin-top: 20px;}
+		.camera {border: 1px solid #ccc;}
+	</style>
+	<script src="app.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-2">
+				<button class="start btn btn-success btn-block" ng-click="startCamera()">Start</button>
+				<button class="stop btn btn-danger btn-block" ng-click="stopCamera()">Stop</button>
+			</div>
+			<div class="col-sm-10">
+				<canvas id="camera" class="camera" width="640" height="480"></canvas>
+			</div>
+		</div>
+	</div>
+</body>

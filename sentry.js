@@ -1,6 +1,6 @@
 'use strict';
 
-const PORT = 8080;
+const PORT = 8081;
 
 const express = require('express');
 const     app = express();
@@ -16,7 +16,7 @@ app.use(express.static('./public'));
 app.use('/bower_components', express.static('./bower_components'));
 
 
-const camera = new Camera({width:640, height:480});
+const camera = new Camera({width:320, height:240});
 
 io.on('connection', socket => {
 	console.log('New socket connection');

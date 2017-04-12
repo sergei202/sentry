@@ -9,6 +9,8 @@ const      io = require('socket.io')(server);
 
 const  Camera = require('./camera');
 
+const   sharp = require('sharp');
+
 server.listen(PORT, err => {
 	console.log('Sentry.  Listening on %j', PORT);
 });
@@ -16,7 +18,7 @@ app.use(express.static('./public'));
 app.use('/bower_components', express.static('./bower_components'));
 
 
-const camera = new Camera({width:320, height:240});
+const camera = new Camera({width:640, height:480});
 
 io.on('connection', socket => {
 	console.log('New socket connection');
@@ -30,6 +32,13 @@ io.on('connection', socket => {
 // 		console.log('sending frame to socket');
 // 		socket.emit('output', 'sending frame');
 		if(err) return socket.emit('message', {error:'camera.onFrame()', err:err});
-		socket.emit('frame', {buffer:image.toBuffer()}, done);
+		var buffer = image.toBuffer();
+
+		sharp(buffer).jpeg({quality:70}).toBuffer().then(jpeg => {
+			socket.volatile.emit('frame', {buffer:jpeg}, done);
+			// console.log('camera.onFrame: buffer: %j,\t jpeg: %j', buffer.length, jpeg.length);
+		});
+
+
 	});
 });

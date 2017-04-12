@@ -1,12 +1,13 @@
+'use strict';
+
 const cv = require('opencv');
 
 class Camera {
-	constructor(options) {
+	constructor(options={}) {
 		console.log('Camera()')
-		if(!options) options={};
 		this.width = options.width || 640;
 		this.height = options.height || 480;
-		this.delay = options.delay || 10;
+		this.delay = options.delay || 50;
 		this.state = false;
 
 		this.camera = new cv.VideoCapture(0);
@@ -23,8 +24,7 @@ class Camera {
 		this.frameFunc = func;
 	}
 	sendFrame() {
-		if(!this.onFrame) return;
-		if(!this.state) return;
+		if(!this.frameFunc || !this.state) return;
 		var self = this;
 		this.getFrame(function(err,image) {
 // 			console.log('sending frame');

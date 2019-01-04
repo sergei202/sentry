@@ -7,6 +7,7 @@
     "express": "^4.14.0",
     "opencv": "^6.0.0",
     "sharp": "^0.17.3",
+    "sleep": "^5.2.3",
     "socket.io": "^1.7.2"
   },
   "devDependencies": {},

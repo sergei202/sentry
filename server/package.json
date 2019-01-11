@@ -1,0 +1,26 @@
+{
+  "name": "sentry-server",
+  "version": "0.0.1",
+  "description": "Sentry server.",
+  "main": "./src/sentry-server.ts",
+  "scripts": {
+    "start": "npm run build:live",
+    "node": "node ./dist/sentry-server.js",
+    "serve": "npm run build:live",
+    "build:live": "nodemon --exec ts-node -- ./src/sentry-server.ts",
+    "build": "tsc",
+    "test": "jest",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "author": "Sergei Golimbievsky",
+  "license": "ISC",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "rootDir": "src"
+  },
+  "dependencies": {
+    "@types/socket.io": "^2.1.2",
+    "socket.io": "^2.2.0"
+  }
+}

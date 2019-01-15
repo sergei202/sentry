@@ -8,14 +8,20 @@ import { Socket } from 'ngx-socket-io';
 })
 export class AppComponent {
 	constructor(private socket:Socket) {
-		socket.emit('init', {
-			type: 'client'
+		socket.on('connect', () => {
+			console.log('Socket connected');
+			socket.emit('init', {
+				type: 'client'
+			});
 		});
+
 		socket.on('connections', connections => {
 			console.log('connections = %o', connections);
 		});
-		socket.on('image', image => {
-			(document.getElementById('image') as any).src = `data:image/jpeg;base64,${image}`;
+		socket.on('frame', frame => {
+			var delay = Date.now() - new Date(frame.date).getTime();
+			console.log('frame: %o', {date:frame.date, conn:frame.conn, delay});
+			(document.getElementById('image') as any).src = `data:image/jpeg;base64,${frame.image}`;
 		});
 	}
 }

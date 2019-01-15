@@ -7,6 +7,8 @@ import { Socket } from 'ngx-socket-io';
 	styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+	connections = [];
+
 	constructor(private socket:Socket) {
 		socket.on('connect', () => {
 			console.log('Socket connected');
@@ -15,8 +17,9 @@ export class AppComponent {
 			});
 		});
 
-		socket.on('connections', connections => {
-			console.log('connections = %o', connections);
+		socket.on('connections', conns => {
+			console.log('connections = %o', conns);
+			this.connections = conns;
 		});
 		socket.on('frame', frame => {
 			var delay = Date.now() - new Date(frame.date).getTime();

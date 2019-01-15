@@ -7,7 +7,7 @@ export const socket = socketIoClient(config.url);
 var timerHandle;
 
 const video = new cv.VideoCapture(0);
-video.set(cv.CAP_PROP_FRAME_WIDTH, 1024);
+video.set(cv.CAP_PROP_FRAME_WIDTH, 1280);
 video.set(cv.CAP_PROP_FRAME_HEIGHT, 768);
 
 socket.on('connect', () => {

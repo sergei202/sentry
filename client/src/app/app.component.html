@@ -1,4 +1,19 @@
-<h1>Sentry Client</h1>
+<div class="container">
+	<h1>Sentry Client</h1>
 
-<img id="image">
-<!-- <router-outlet></router-outlet> -->
+	<div class="row">
+		<div class="col-4">
+			<ul class="list-group">
+				<li class="list-group-item" *ngFor="let conn of connections">
+					<b>{{conn.type}}</b>
+					<span *ngIf="conn.name">: {{conn.name}}</span>
+				</li>
+			</ul>
+		</div>
+		<div class="col-8">
+			<img id="image">
+		</div>
+	</div>
+
+	<!-- <router-outlet></router-outlet> -->
+</div>

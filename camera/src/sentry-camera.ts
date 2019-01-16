@@ -26,22 +26,34 @@ socket.on('start', params => {
 socket.on('stop', () => {
 	stop();
 });
+var delay = 500;
 
-function start(delay) {
-	timerHandle = setInterval(() => {
-		var frame = video.read();
-		if(!frame) return;
-		var image = cv.imencode('.jpg', frame).toString('base64');
-		var date = new Date();
-		console.log('%s: Sending image', date.toLocaleString());
-		socket.emit('frame', {image, date});
-	}, delay || 500);
+function sendFrame() {
+	var frame = video.read();
+	if(!frame) {
+		if(delay) timerHandle=setTimeout(sendFrame, delay);
+		return;
+	}
+	var image = cv.imencode('.jpg', frame).toString('base64');
+	var date = new Date();
+	console.log('%s: Sending image', date.toLocaleString());
+	var startTime = Date.now();
+	socket.emit('frame', {image, date}, confirm => {
+		console.log('\tdelay: %j', Date.now()-startTime);
+		if(delay) timerHandle=setTimeout(sendFrame, delay);
+	});
+}
+
+function start(d) {
+	delay = d;
+	sendFrame();
 }
 
 function stop() {
 	if(timerHandle) {
-		clearInterval(timerHandle);
+		clearTimeout(timerHandle);
 		timerHandle = null;
+		delay = 0;
 		// video.release();
 	}
 }

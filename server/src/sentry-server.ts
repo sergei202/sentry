@@ -29,13 +29,14 @@ io.on('connection', socket => {
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 		if(data.type==='camera') {
-			socket.emit('start', {delay:500});
+			socket.emit('start', {delay:100});
 		}
 	});
 
-	socket.on('frame', frame => {
+	socket.on('frame', (frame,ack) => {
 		var conn = getConnectionFromSocket(socket);
-		socket.in('client').emit('frame', {...frame, conn});
+		socket.volatile.in('client').emit('frame', {...frame, conn});
+		if(ack) ack();
 	});
 
 	socket.on('disconnect', () => {

@@ -5,7 +5,7 @@ import { SocketIoModule }		from 'ngx-socket-io';
 import { AppRoutingModule }		from './app-routing.module';
 import { AppComponent }			from './app.component';
 
-const socketUrl = 'http://localhost:7000';
+const socketUrl = '/';
 
 @NgModule({
 	declarations: [

@@ -1,0 +1,6 @@
+{
+	"/socket.io": {
+		"target": "http://localhost:7000",
+		"secure": "false"
+	}
+}

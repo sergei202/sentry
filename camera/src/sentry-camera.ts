@@ -1,14 +1,24 @@
-import * as socketIoClient			from 'socket.io-client';
-import * as cv						from 'opencv4nodejs';
-import { config }					from './config';
+import * as socketIoClient				from 'socket.io-client';
+import * as cv							from 'opencv4nodejs';
+import { config }						from './config';
+import { getVersionFromPackageJson }	from './lib/version';
+
+getVersionFromPackageJson().then(version => {
+	console.log('Sentry Camera %s', version);
+});
 
 export const socket = socketIoClient(config.url);
 
-var timerHandle;
-
 const video = new cv.VideoCapture(0);
-video.set(cv.CAP_PROP_FRAME_WIDTH, 1280);
-video.set(cv.CAP_PROP_FRAME_HEIGHT, 768);
+video.set(cv.CAP_PROP_FRAME_WIDTH, 640);
+video.set(cv.CAP_PROP_FRAME_HEIGHT, 480);
+
+var timerHandle;
+const stats:any = {
+	delay: 500,
+	count: 0,
+	rtt: 0
+};
 
 socket.on('connect', () => {
 	console.log('Socket connected');
@@ -19,33 +29,43 @@ socket.on('disconnect', () => {
 	stop();
 });
 
-
 socket.on('start', params => {
 	start(params.delay || 500);
 });
 socket.on('stop', () => {
 	stop();
 });
-var delay = 500;
+socket.on('delay', delay => {
+	stats.delay = delay;
+});
+socket.on('stats', () => {
+	stats.uptime = process.uptime();
+	socket.emit('stats', stats);
+});
 
 function sendFrame() {
 	var frame = video.read();
 	if(!frame) {
-		if(delay) timerHandle=setTimeout(sendFrame, delay);
+		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
 		return;
 	}
 	var image = cv.imencode('.jpg', frame).toString('base64');
 	var date = new Date();
-	console.log('%s: Sending image', date.toLocaleString());
 	var startTime = Date.now();
 	socket.emit('frame', {image, date}, confirm => {
-		console.log('\tdelay: %j', Date.now()-startTime);
-		if(delay) timerHandle=setTimeout(sendFrame, delay);
+		stats.count++;
+		if(stats.count%100===0) {
+			stats.rtt = Date.now()-startTime;
+			console.log('%s: Sending image, count=%j,\trtt=%j', date.toLocaleString(), stats.count, stats.rtt);
+			stats.uptime = process.uptime();
+			socket.emit('stats', stats);
+		}
+		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
 	});
 }
 
 function start(d) {
-	delay = d;
+	stats.delay = d;
 	sendFrame();
 }
 
@@ -53,12 +73,6 @@ function stop() {
 	if(timerHandle) {
 		clearTimeout(timerHandle);
 		timerHandle = null;
-		delay = 0;
-		// video.release();
 	}
+	stats.delay = 0;
 }
-
-console.log('Sentry Camera.');
-
-
-

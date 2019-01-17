@@ -1,9 +1,12 @@
-import * as http			from 'http';
-import * as socketIo		from 'socket.io';
-import { config }			from './config';
-import { connect } from 'tls';
+import * as http					from 'http';
+import * as socketIo				from 'socket.io';
+import { config }					from './config';
+import { getVersionFromPackageJson}	from './lib/version';
 
-console.log('Sentry Server.');
+getVersionFromPackageJson().then(version => {
+	console.log('Sentry Server %s', version);
+});
+
 
 const server = http.createServer();
 const io = socketIo(server);

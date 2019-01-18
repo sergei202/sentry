@@ -2,7 +2,7 @@
 	<h1>Sentry Client</h1>
 
 	<div class="row">
-		<div class="col-4">
+		<div class="col-sm-3">
 			<ul class="list-group">
 				<li class="list-group-item" *ngFor="let conn of connections">
 					<b>{{conn.type}}</b>
@@ -10,8 +10,16 @@
 				</li>
 			</ul>
 		</div>
-		<div class="col-8">
-			<img id="image">
+		<div class="col-sm-9">
+			<div class="row">
+				<div class="col-sm" *ngFor="let camera of cameras">
+					<img class="img-thumbnail img-fluid" [src]="camera.src" *ngIf="camera.src" (click)="selectCamera(camera)">
+					<div class="text-center">{{camera.name}}</div>
+				</div>
+			</div>
+		</div>
+		<div *ngIf="selected">
+			<img class="img-thumbnail img-fluid" [src]="selected.src" *ngIf="selected.src" (click)="selectCamera(selected)">
 		</div>
 	</div>
 

@@ -9,9 +9,9 @@ getVersionFromPackageJson().then(version => {
 
 export const socket = socketIoClient(config.url);
 
-const video = new cv.VideoCapture(0);
-video.set(cv.CAP_PROP_FRAME_WIDTH, 640);
-video.set(cv.CAP_PROP_FRAME_HEIGHT, 480);
+const video = new cv.VideoCapture(config.device || 0);
+if(config.width)  video.set(cv.CAP_PROP_FRAME_WIDTH,  config.width);
+if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 
 var timerHandle;
 const stats:any = {

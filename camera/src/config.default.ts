@@ -1,4 +1,4 @@
-export const config = {
+export const config:any = {
 	device: 0,
 	width: 1024,
 	height: 768,

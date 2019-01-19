@@ -10,6 +10,7 @@ export class AppComponent {
 	connections = [];
 	cameras = [];
 	selected = null;
+	sensors = [];
 
 	constructor(private socket:Socket) {
 		socket.on('connect', () => {
@@ -31,6 +32,14 @@ export class AppComponent {
 				camera.src = `data:image/jpeg;base64,${frame.image}`;
 			}
 			// console.log('frame: %o', {date:frame.date, conn:frame.conn, delay});
+		});
+
+		socket.on('sensors', sensors => {
+			this.sensors = sensors;
+			console.log('sensors: %o', sensors);
+		});
+		socket.on('sensor', sensor => {
+			console.log('sensor: %o', sensor);
 		});
 	}
 

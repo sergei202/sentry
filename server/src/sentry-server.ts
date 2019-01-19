@@ -41,6 +41,15 @@ io.on('connection', socket => {
 		socket.volatile.in('client').emit('frame', {...frame, conn});
 		if(ack) ack();
 	});
+	socket.on('sensors', sensors => {
+		socket.volatile.in('client').emit('sensors', sensors);
+		console.log('sensors: %j', sensors);
+	});
+	socket.on('sensor', sensor => {
+		socket.volatile.in('client').emit('sensor', sensor);
+		sensor.date = new Date();
+		console.log('sensor: %j', sensor);
+	});
 
 	socket.on('disconnect', () => {
 		console.log('Disconnected: %j', socket.id);

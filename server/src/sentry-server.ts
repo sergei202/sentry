@@ -18,6 +18,7 @@ interface Connection {
 };
 
 const connections:Connection[] = [];
+var sensors:any[] = [];
 
 io.on('connection', socket => {
 	console.log('New connection: %j', socket.id);
@@ -34,6 +35,9 @@ io.on('connection', socket => {
 		if(data.type==='camera') {
 			socket.emit('start', {delay:100});
 		}
+		if(data.type==='client') {
+			socket.emit('sensors', sensors);
+		}
 	});
 
 	socket.on('frame', (frame,ack) => {
@@ -41,8 +45,9 @@ io.on('connection', socket => {
 		socket.volatile.in('client').emit('frame', {...frame, conn});
 		if(ack) ack();
 	});
-	socket.on('sensors', sensors => {
-		socket.volatile.in('client').emit('sensors', sensors);
+	socket.on('sensors', sens => {
+		socket.volatile.in('client').emit('sensors', sens);
+		sensors = sens;
 		console.log('sensors: %j', sensors);
 	});
 	socket.on('sensor', sensor => {

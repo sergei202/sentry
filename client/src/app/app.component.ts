@@ -47,4 +47,15 @@ export class AppComponent {
 		if(this.selected===camera) camera=null;
 		this.selected = camera;
 	}
+
+	sensorValueLabel(sensor) {
+		switch(sensor.type) {
+			case 'door':
+				return sensor.value ? 'Open':'Closed';
+			case 'motion':
+				return sensor.value ? 'MOTION':'Still';
+			default:
+				return sensor.value;
+		}
+	}
 }

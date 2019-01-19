@@ -17,25 +17,28 @@ rl.on('line', (input) => {
 });
 
 const sensors = [{
-	id: 527353,
-	name: 'Front Door Motion',
+	id: 161541,
+	name: 'Front Door Sensor',
+	type: 'door',
 	value: false,
 	decode: event => {
-		return event.event===128;
+		return event.state==='open';
 	}
 },{
 	id: 684415,
 	name: 'Back Door Sensor',
+	type: 'door',
 	value: false,
 	decode: event => {
 		return event.event===160;
 	}
 },{
-	id: 161541,
-	name: 'Front Door Sensor',
+	id: 527353,
+	name: 'Front Door Motion',
+	type: 'motion',
 	value: false,
 	decode: event => {
-		return event.state==='open';
+		return event.event===128;
 	}
 }];
 

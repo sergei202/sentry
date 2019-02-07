@@ -2,6 +2,7 @@ import * as http					from 'http';
 import * as socketIo				from 'socket.io';
 import { config }					from './config';
 import { getVersionFromPackageJson}	from './lib/version';
+import { onCameraMotion }			from './ctrls/notifyCtrl';
 
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Server %s', version);
@@ -43,6 +44,7 @@ io.on('connection', socket => {
 	socket.on('frame', (frame,ack) => {
 		var conn = getConnectionFromSocket(socket);
 		socket.volatile.in('client').emit('frame', {...frame, conn});
+		if(frame.motion>=0.1) onCameraMotion(conn,frame);
 		if(ack) ack();
 	});
 	socket.on('sensors', sens => {

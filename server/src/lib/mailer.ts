@@ -21,14 +21,18 @@ export interface MailerOptions {
 	html?: string;
 };
 
-const transport = nodemailer.createTransport(postmarkTransport({
-	auth: {
-		apiKey: config.mailer && config.mailer.postmark
-	}
-}));
+var transport = null;
+if(config.mailer && config.mailer.postmark) {
+	transport = nodemailer.createTransport(postmarkTransport({
+		auth: {
+			apiKey: config.mailer.postmark
+		}
+	}));
+}
 
 export function sendEmail(options):Promise<MailerOptions> {
-	if(!options) return Promise.reject({error:'mail.sendEmail(): Missing options'});
+	if(!options) return Promise.reject({message:'mail.sendEmail(): Missing options'});
+	if(!transport) return Promise.reject({message:'mailer transport not setup'});
 
 	return new Promise((resolve,reject) => {
 		transport.sendMail(options, (err,info) => {

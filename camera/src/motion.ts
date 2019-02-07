@@ -4,32 +4,41 @@ const video = new cv.VideoCapture(0);
 video.set(cv.CAP_PROP_FRAME_WIDTH, 1280);
 video.set(cv.CAP_PROP_FRAME_HEIGHT, 768);
 
-const bgSubtractor = new cv.BackgroundSubtractorMOG2();
+const bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 64, true);
 
+const dilateKernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(4, 4));
 
 while(1) {
 	var image = video.read();
-	if(!image) continue;
+	if(!image) {cv.waitKey(100); continue;}
 
 	const foreGroundMask = bgSubtractor.apply(image);
 
-	const iterations = 2;
+	// console.log('foreGroundMask: %j', foreGroundMask.countNonZero());
+
+
+	// if(foreGroundMask.countNonZero()<10000) {cv.waitKey(100); continue;}
+
+	const iterations = 1;
+	// const blurred = foreGroundMask.blur(new cv.Size(4, 4));
 	const dilated = foreGroundMask.dilate(
-		cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(4, 4)),
+		dilateKernel,
 		new cv.Point2(-1, -1),
 		iterations
 	);
-	const blurred = dilated.blur(new cv.Size(10, 10));
-	const thresholded = blurred.threshold(200, 255, cv.THRESH_BINARY);
-	console.log('motion: %j', thresholded.countNonZero());
+	// const blurred = dilated.blur(new cv.Size(10, 10));
+	const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
+	console.log('thresholded: %j', thresholded.countNonZero());
 
-	const minPxSize = 4000;
+	const minPxSize = 2000;
 	drawRectAroundBlobs(thresholded, image, minPxSize);
 
 	cv.imshow('image', image);
-	// cv.imshow('delta',  frameDelta);
+	cv.imshow('foreGroundMask', foreGroundMask);
+	// cv.imshow('dilated', dilated);
+	// cv.imshow('blurred', blurred);
+	cv.imshow('thresholded', thresholded);
 	cv.waitKey(100);
-	// lastImage = gray;
 }
 
 function drawRectAroundBlobs(binaryImg, dstImg, minPxSize, fixedRectWidth?) {

@@ -2,6 +2,7 @@ import * as socketIoClient				from 'socket.io-client';
 import * as cv							from 'opencv4nodejs';
 import { config }						from './config';
 import { getVersionFromPackageJson }	from './lib/version';
+import { detectMotion }					from './motion';
 
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Camera %s', version);
@@ -49,10 +50,12 @@ function sendFrame() {
 		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
 		return;
 	}
+	var motion = detectMotion(frame);
 	var image = cv.imencode('.jpg', frame).toString('base64');
+
 	var date = new Date();
 	var startTime = Date.now();
-	socket.emit('frame', {image, date}, confirm => {
+	socket.emit('frame', {image, motion, date}, confirm => {
 		stats.count++;
 		if(stats.count%100===0) {
 			stats.rtt = Date.now()-startTime;

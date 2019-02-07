@@ -1,25 +1,44 @@
 import * as cv						from 'opencv4nodejs';
 
+const video = new cv.VideoCapture(0);
+video.set(cv.CAP_PROP_FRAME_WIDTH, 1280);
+video.set(cv.CAP_PROP_FRAME_HEIGHT, 768);
+
 const bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 92, true);
 
 const dilateKernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(4, 4));
 const dilatePoint = new cv.Point2(-1, -1);
 
-export function detectMotion(image:cv.Mat):number {
+while(1) {
+	var image = video.read();
+	if(!image) {cv.waitKey(100); continue;}
+
 	const foreGroundMask = bgSubtractor.apply(image);
+
+	// console.log('foreGroundMask: %j', foreGroundMask.countNonZero());
+
+
+	// if(foreGroundMask.countNonZero()<10000) {cv.waitKey(100); continue;}
 
 	const iterations = 2;
 	// const blurred = foreGroundMask.blur(new cv.Size(4, 4));
 	const dilated = foreGroundMask.dilate(dilateKernel, dilatePoint,iterations);
 	// const blurred = dilated.blur(new cv.Size(10, 10));
 	const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
+	console.log('thresholded: %j', thresholded.countNonZero());
 
 	const minPxSize = 2000;
 	drawRectAroundBlobs(thresholded, image, minPxSize);
 
-	var motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
-	return motion;
+	cv.imshow('image', image);
+	cv.imshow('foreGroundMask', foreGroundMask);
+	// cv.imshow('dilated', dilated);
+	// cv.imshow('blurred', blurred);
+	cv.imshow('thresholded', thresholded);
+	cv.waitKey(100);
 }
+
+
 
 const red = new cv.Vec3(0,0,255);
 

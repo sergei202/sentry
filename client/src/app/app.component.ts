@@ -30,6 +30,7 @@ export class AppComponent {
 			var camera = this.cameras.find(c => c.id===frame.conn.id);
 			if(camera) {
 				camera.src = `data:image/jpeg;base64,${frame.image}`;
+				camera.motion = frame.motion;
 			}
 			// console.log('frame: %o', {date:frame.date, conn:frame.conn, delay});
 		});

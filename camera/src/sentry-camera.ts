@@ -15,15 +15,18 @@ if(config.width)  video.set(cv.CAP_PROP_FRAME_WIDTH,  config.width);
 if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 
 var timerHandle;
-const stats:any = {
+const stats = {
 	delay: 500,
-	count: 0,
-	rtt: 0
+	skip: 10,
+	processed: 0,
+	sent: 0,
+	rtt: 0,
+	uptime: 0
 };
 
 socket.on('connect', () => {
 	console.log('Socket connected');
-	socket.emit('init', {type:'camera', name:config.name});
+	socket.emit('init', {type:'camera', name:config.name, stats});
 });
 socket.on('disconnect', () => {
 	console.log('Socket disconnected');
@@ -38,13 +41,18 @@ socket.on('stop', () => {
 });
 socket.on('delay', delay => {
 	stats.delay = delay;
+	sendStats();
+});
+socket.on('skip', skip => {
+	stats.skip = skip;
+	sendStats();
 });
 socket.on('stats', () => {
-	stats.uptime = process.uptime();
-	socket.emit('stats', stats);
+	sendStats();
 });
 
-function sendFrame() {
+
+function processFrame() {
 	var frame = video.read();
 	if(!frame) {
 		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
@@ -52,24 +60,35 @@ function sendFrame() {
 	}
 	var motion = detectMotion(frame);
 	var image = cv.imencode('.jpg', frame).toString('base64');
+	stats.processed++;
 
+	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image,motion);
+
+	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
+}
+
+
+function sendFrame(image,motion) {
 	var date = new Date();
 	var startTime = Date.now();
 	socket.emit('frame', {image, motion, date}, confirm => {
-		stats.count++;
-		if(stats.count%100===0) {
-			stats.rtt = Date.now()-startTime;
-			console.log('%s: Sending image, count=%j,\trtt=%j', date.toLocaleString(), stats.count, stats.rtt);
-			stats.uptime = process.uptime();
-			socket.emit('stats', stats);
-		}
-		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
+		var rtt = Date.now()-startTime;
+		if(!stats.rtt) stats.rtt = rtt;
+		stats.rtt = (stats.rtt+rtt)/2
+		stats.sent++;
+		if(stats.sent%100===0) sendStats();
 	});
 }
 
-function start(d) {
-	stats.delay = d;
-	sendFrame();
+function sendStats() {
+	stats.uptime = process.uptime();
+	console.log('%s: stats=%j', new Date().toLocaleString(), stats);
+	socket.emit('stats', stats);
+}
+
+function start(delay) {
+	stats.delay = delay;
+	processFrame();
 }
 
 function stop() {

@@ -15,7 +15,8 @@ const io = socketIo(server);
 interface Connection {
 	id:string,		// Socket id
 	name:string,
-	type:string
+	type:string,
+	stats:any
 };
 
 const connections:Connection[] = [];
@@ -44,8 +45,28 @@ io.on('connection', socket => {
 	socket.on('frame', (frame,ack) => {
 		var conn = getConnectionFromSocket(socket);
 		socket.volatile.in('client').emit('frame', {...frame, conn});
-		if(frame.motion>=0.1) onCameraMotion(conn,frame);
+
+		if(!conn.stats.avgMotion) conn.stats.avgMotion = 0;
+		conn.stats.avgMotion = (conn.stats.avgMotion+frame.motion)/2;
+
+		if(frame.motion>=0.1) {
+			conn.stats.skip = 0;
+			socket.emit('skip', conn.stats.skip);
+
+			onCameraMotion(conn,frame);
+		} else {
+			if(conn.stats.skip<10 && conn.stats.avgMotion<0.05) {
+				conn.stats.skip = 10;
+				socket.emit('skip', conn.stats.skip);
+				console.log('avgMotion=%j, setting skip=%j', conn.stats.avgMotion, conn.stats.skip);
+			}
+		}
 		if(ack) ack();
+	});
+	socket.on('stats', stats => {
+		var conn = getConnectionFromSocket(socket);
+		console.log('%j stats: %j', conn.name, stats);
+		socket.volatile.in('client').emit('stats', stats);
 	});
 	socket.on('sensors', sens => {
 		socket.volatile.in('client').emit('sensors', sens);

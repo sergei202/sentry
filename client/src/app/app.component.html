@@ -24,10 +24,12 @@
 			<div class="row">
 				<div class="col-sm" *ngFor="let camera of cameras">
 					<img class="img-thumbnail img-fluid" [src]="camera.src" *ngIf="camera.src" (click)="selectCamera(camera)">
-					<div class="float-right">
-						{{camera.motion | percent}}
+					<div>
+						<div class="float-right">
+							{{camera.stats.motion | percent}}
+						</div>
+						{{camera.name}}
 					</div>
-					{{camera.name}}
 				</div>
 			</div>
 		</div>
@@ -35,7 +37,7 @@
 			<img class="img-thumbnail img-fluid" [src]="selected.src" *ngIf="selected.src" (click)="selectCamera(selected)">
 			<div>
 				<div class="float-right">
-					{{selected.motion | percent}}
+					{{selected.stats.motion | percent}}
 				</div>
 				{{selected.name}}
 			</div>

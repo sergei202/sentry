@@ -3,6 +3,7 @@ import * as cv							from 'opencv4nodejs';
 import { config }						from './config';
 import { getVersionFromPackageJson }	from './lib/version';
 import { detectMotion }					from './motion';
+import { statSync } from 'fs';
 
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Camera %s', version);
@@ -21,7 +22,9 @@ const stats = {
 	processed: 0,
 	sent: 0,
 	rtt: 0,
-	uptime: 0
+	uptime: 0,
+	motion: 0,
+	avgMotion: 0
 };
 
 socket.on('connect', () => {
@@ -41,14 +44,9 @@ socket.on('stop', () => {
 });
 socket.on('delay', delay => {
 	stats.delay = delay;
-	sendStats();
 });
 socket.on('skip', skip => {
 	stats.skip = skip;
-	sendStats();
-});
-socket.on('stats', () => {
-	sendStats();
 });
 
 
@@ -58,32 +56,26 @@ function processFrame() {
 		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
 		return;
 	}
-	var motion = detectMotion(frame);
+	stats.motion = detectMotion(frame);
+	stats.avgMotion = (stats.motion+stats.avgMotion)/2;
+
 	var image = cv.imencode('.jpg', frame).toString('base64');
 	stats.processed++;
 
-	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image,motion);
+	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image);
 
 	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
 }
 
 
-function sendFrame(image,motion) {
+function sendFrame(image) {
 	var date = new Date();
-	var startTime = Date.now();
-	socket.emit('frame', {image, motion, date}, confirm => {
-		var rtt = Date.now()-startTime;
-		if(!stats.rtt) stats.rtt = rtt;
+	stats.uptime = process.uptime();
+	socket.emit('frame', {image,date,stats}, () => {
+		var rtt = Date.now()-date.getTime();
 		stats.rtt = (stats.rtt+rtt)/2
 		stats.sent++;
-		if(stats.sent%100===0) sendStats();
 	});
-}
-
-function sendStats() {
-	stats.uptime = process.uptime();
-	console.log('%s: stats=%j', new Date().toLocaleString(), stats);
-	socket.emit('stats', stats);
 }
 
 function start(delay) {

@@ -3,7 +3,7 @@ import { sendEmail }	from '../lib/mailer';
 import { config }		from '../config';
 
 export function onCameraMotion(camera,frame) {
-	console.log('onCameraMotion: %j: %j', camera.name, frame.motion);
+	console.log('onCameraMotion: %j: %j', camera.name, frame.stats.motion);
 	sendCameraMotionEmail(camera,frame);
 }
 
@@ -14,10 +14,10 @@ function sendCameraMotionEmail(camera,frame) {
 
 	if(!config.mailer || !config.mailer.to) return false;
 
-	console.log('sendCameraMotionEmail: %j: %j', camera.name, frame.motion);
+	console.log('sendCameraMotionEmail: %j: %j', camera.name, frame.stats.motion);
 	lastEmailDate = new Date();
 
-	var html = 'Motion: ' + frame.motion + '<br><br>';
+	var html = 'Motion: ' + frame.stats.motion + '<br><br>';
 
 	html += `<img src="cid:image.jpg">`;
 

@@ -35,6 +35,13 @@ You'll need to install the dependencies for OpenCV:
 
 
 If you are using a Raspberry Pi camera: `sudo modprobe bcm2835-v4l2`
+Or add `bcm2835-v4l2` to `/etc/modules`
+
+You'll also have to add yourself to the `video` group (if you want run this as non-root):
+```
+sudo usermod -a -G video $USER
+reboot
+```
 
 ### Server
 - `npm install`

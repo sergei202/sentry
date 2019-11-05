@@ -1,7 +1,9 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../out-tsc/app",
+	"outDir": "../out-tsc/app",
+	"downlevelIteration": true,
+	"target": "es6",
     "types": []
   },
   "exclude": [

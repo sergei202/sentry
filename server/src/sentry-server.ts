@@ -34,7 +34,7 @@ io.on('connection', socket => {
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 		if(data.type==='camera') {
-			socket.emit('start', {delay:250});
+			socket.emit('start', {delay:1});
 		}
 		if(data.type==='client') {
 			socket.emit('sensors', sensors);
@@ -48,7 +48,7 @@ io.on('connection', socket => {
 		console.log('%s: %j', conn.name, frame.stats);
 
 		if(frame.stats.motion>=0.1) {
-			socket.emit('skip', 0);
+			socket.emit('skip', 1);
 
 			onCameraMotion(conn,frame);
 		} else {

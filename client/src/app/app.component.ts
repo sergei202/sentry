@@ -29,10 +29,11 @@ export class AppComponent {
 			// var delay = Date.now() - new Date(frame.date).getTime();
 			var camera = this.cameras.find(c => c.id===frame.conn.id);
 			if(camera) {
-				camera.src = `data:image/jpeg;base64,${frame.image}`;
+				let base64 = btoa(String.fromCharCode(...new Uint8Array(frame.image)));
+				camera.src = `data:image/jpeg;base64,${base64}`;
 				camera.stats = frame.stats;
 			}
-			console.log('stats: %o', frame);
+			console.log('frame: %o', frame);
 		});
 
 		socket.on('sensors', sensors => {

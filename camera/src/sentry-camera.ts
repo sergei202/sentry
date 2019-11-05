@@ -3,7 +3,6 @@ import * as cv							from 'opencv4nodejs';
 import { config }						from './config';
 import { getVersionFromPackageJson }	from './lib/version';
 import { detectMotion }					from './motion';
-import { statSync } from 'fs';
 
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Camera %s', version);
@@ -17,14 +16,20 @@ if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 
 var timerHandle;
 const stats = {
-	delay: 500,
-	skip: 10,
+	delay: 1,
+	skip: 0,
 	processed: 0,
 	sent: 0,
 	rtt: 0,
 	uptime: 0,
 	motion: 0,
-	avgMotion: 0
+	avgMotion: 0,
+
+	processFrameCount: 0,
+	processFrameRate: 0,
+
+	sendFrameCount: 0,
+	sendFrameRate: 0
 };
 
 socket.on('connect', () => {
@@ -49,26 +54,51 @@ socket.on('skip', skip => {
 	stats.skip = skip;
 });
 
+var fpsTime = 5;
 
-function processFrame() {
-	var frame = video.read();
+function calcProcessFrameRate() {
+	var fps = (stats.processed - stats.processFrameCount)/fpsTime;
+	stats.processFrameCount = stats.processed;
+	stats.processFrameRate = fpsTime;
+	console.log('calcProcessFrameRate:\tfps=%o,\tstats.processed=%o,\tprocessFrameCount=%o', fps, stats.processed, stats.processFrameCount);
+	setTimeout(() => calcProcessFrameRate(), fpsTime*1000);
+}
+function calcSendFrameRate() {
+	var fps = (stats.sent - stats.sendFrameCount)/fpsTime;
+	stats.sendFrameCount = stats.sent;
+	stats.sendFrameRate = fpsTime;
+	console.log('calcSendFrameRate:\tfps=%o,\tstats.sent=%o,\t\tsendFrameCount=%o', fps, stats.sent, stats.sendFrameCount);
+	setTimeout(() => calcSendFrameRate(), fpsTime*1000);
+}
+
+calcProcessFrameRate();
+calcSendFrameRate();
+
+async function processFrame() {
+	// console.log('processFrame()');
+	// console.time('video.readAsync');
+	var frame = await video.readAsync();
+	// console.timeEnd('video.readAsync');
 	if(!frame) {
-		if(stats.delay) timerHandle=setTimeout(sendFrame, stats.delay);
+		if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
 		return;
 	}
+
 	stats.motion = detectMotion(frame);
 	stats.avgMotion = (stats.motion+stats.avgMotion)/2;
 
-	var image = cv.imencode('.jpg', frame).toString('base64');
+	var image = cv.imencode('.jpg', frame);
 	stats.processed++;
 
 	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image);
 
-	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
+
+	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay); 	
 }
 
 
-function sendFrame(image) {
+function sendFrame(image:Buffer) {
+	// console.log('sendFrame()');
 	var date = new Date();
 	stats.uptime = process.uptime();
 	socket.emit('frame', {image,date,stats}, () => {

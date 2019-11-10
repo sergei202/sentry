@@ -17,7 +17,7 @@ if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 var timerHandle;
 const stats = {
 	delay: 1,
-	skip: 0,
+	skip: 1,
 	processed: 0,
 	sent: 0,
 	rtt: 0,
@@ -86,6 +86,9 @@ async function processFrame() {
 
 	stats.motion = detectMotion(frame);
 	stats.avgMotion = (stats.motion+stats.avgMotion)/2;
+
+	var date = new Date().toLocaleString();
+	frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);
 
 	var image = cv.imencode('.jpg', frame);
 	stats.processed++;

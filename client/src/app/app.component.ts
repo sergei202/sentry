@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
 	selector: 'app-root',
@@ -12,7 +13,7 @@ export class AppComponent {
 	selected = null;
 	sensors = [];
 
-	constructor(private socket:Socket) {
+	constructor(private socket:Socket, private domSanitizer:DomSanitizer) {
 		socket.on('connect', () => {
 			console.log('Socket connected');
 			socket.emit('init', {
@@ -26,14 +27,14 @@ export class AppComponent {
 			this.cameras = conns.filter(c => c.type==='camera');
 		});
 		socket.on('frame', frame => {
+			console.log('frame: %o', frame);
 			// var delay = Date.now() - new Date(frame.date).getTime();
 			var camera = this.cameras.find(c => c.id===frame.conn.id);
 			if(camera) {
-				let base64 = btoa(String.fromCharCode(...new Uint8Array(frame.image)));
-				camera.src = `data:image/jpeg;base64,${base64}`;
+				var blob = new Blob([frame.image], {type:'image/jpeg'});
+				camera.src = this.domSanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
 				camera.stats = frame.stats;
 			}
-			console.log('frame: %o', frame);
 		});
 
 		socket.on('sensors', sensors => {

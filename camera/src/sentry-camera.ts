@@ -6,6 +6,7 @@ import { detectMotion }					from './motion';
 
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Camera %s', version);
+	stats.version = version;
 });
 
 export const socket = socketIoClient(config.url);
@@ -16,7 +17,8 @@ if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 
 var timerHandle;
 const stats = {
-	delay: 1,
+	version: '',
+	delay: 10,
 	skip: 1,
 	processed: 0,
 	sent: 0,
@@ -96,7 +98,7 @@ async function processFrame() {
 	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image);
 
 
-	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay); 	
+	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
 }
 
 

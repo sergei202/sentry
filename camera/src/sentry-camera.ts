@@ -1,5 +1,7 @@
 import * as socketIoClient				from 'socket.io-client';
 import * as cv							from 'opencv4nodejs';
+import * as moment						from 'moment';
+import * as fs							from 'fs';
 import { config }						from './config';
 import { getVersionFromPackageJson }	from './lib/version';
 import { detectMotion }					from './motion';
@@ -44,7 +46,7 @@ socket.on('disconnect', () => {
 });
 
 socket.on('start', params => {
-	start(params.delay || 500);
+	start(params.delay || 10);
 });
 socket.on('stop', () => {
 	stop();
@@ -91,11 +93,17 @@ async function processFrame() {
 
 	var date = new Date().toLocaleString();
 	frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);
-
-	var image = cv.imencode('.jpg', frame);
 	stats.processed++;
 
-	if(!stats.skip || stats.processed%stats.skip===0) sendFrame(image);
+	var image = cv.imencode('.jpg', frame);
+	if(stats.avgMotion>0.1 && stats.processed%2===0) {
+		var isoDate = new Date().toISOString();
+		saveImage(`images/${isoDate}.jpg`, image);
+	}
+
+	if(!stats.skip || stats.processed%stats.skip===0) {
+		sendFrame(image);
+	}
 
 
 	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
@@ -112,6 +120,17 @@ function sendFrame(image:Buffer) {
 		stats.sent++;
 	});
 }
+
+
+function saveImage(path:string, image:Buffer) {
+	return new Promise((resolve,reject) => {
+		fs.writeFile(path,image, (err) => {
+			if(err) return reject(err);
+			resolve(true);
+		});
+	});
+}
+
 
 function start(delay) {
 	stats.delay = delay;

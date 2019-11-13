@@ -3,7 +3,7 @@ import * as socketIo				from 'socket.io';
 import { config }					from './config';
 import { getVersionFromPackageJson}	from './lib/version';
 import { onCameraMotion }			from './ctrls/notifyCtrl';
-
+import * as fs						from 'fs';
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Server %s', version);
 });
@@ -34,7 +34,7 @@ io.on('connection', socket => {
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 		if(data.type==='camera') {
-			socket.emit('start', {delay:1});
+			socket.emit('start', {delay:1, skip:1});
 		}
 		if(data.type==='client') {
 			socket.emit('sensors', sensors);
@@ -48,7 +48,7 @@ io.on('connection', socket => {
 		console.log('%s: %j', conn.name, frame.stats);
 
 		if(frame.stats.motion>=0.1) {
-			socket.emit('skip', 1);
+			socket.emit('skip', 2);
 
 			onCameraMotion(conn,frame);
 		} else {
@@ -83,4 +83,13 @@ server.listen(config.port);
 
 function getConnectionFromSocket(socket:socketIo.Socket):Connection {
 	return connections.find(c => c.id===socket.id);
+}
+
+function saveImage(path:string, image:Buffer) {
+	return new Promise((resolve,reject) => {
+		fs.writeFile(path,image, (err) => {
+			if(err) return reject(err);
+			resolve(true);
+		});
+	});
 }

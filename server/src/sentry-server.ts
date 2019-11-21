@@ -15,7 +15,8 @@ const io = socketIo(server);
 interface Connection {
 	id:string,		// Socket id
 	name:string,
-	type:string
+	type:string,
+	email:boolean
 };
 
 const connections:Connection[] = [];
@@ -34,27 +35,37 @@ io.on('connection', socket => {
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 		if(data.type==='camera') {
-			socket.emit('start', {delay:1, skip:1});
+			socket.emit('start', {delay:0, skip:0});
 		}
 		if(data.type==='client') {
 			socket.emit('sensors', sensors);
 		}
 	});
 
+	socket.on('config', config => {
+		var conn = getConnectionFromSocket(socket);
+		console.log('config: %j', config);
+	});
+
 	socket.on('frame', (frame,ack) => {
 		var conn = getConnectionFromSocket(socket);
 		socket.volatile.in('client').emit('frame', {...frame, conn});
 
-		console.log('%s: %j', conn.name, frame.stats);
+		// console.log('%s: %j', conn.name, frame.stats);
 
-		if(frame.stats.motion>=0.1) {
-			socket.emit('skip', 2);
+		if(frame.stats.avgMotion>=0.1) {
+			socket.emit('skip', 0);
 
-			onCameraMotion(conn,frame);
+			if(true) {
+				var isoDate = new Date().toISOString();
+				saveImage(`images/${isoDate}.jpg`, frame.image);
+			}
+
+			// onCameraMotion(conn,frame);
 		} else {
 			if(frame.stats.skip<10 && frame.stats.avgMotion<0.05) {
-				socket.emit('skip', 10);
-				console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
+				socket.emit('skip', 0);
+				// console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
 			}
 		}
 		if(ack) ack();

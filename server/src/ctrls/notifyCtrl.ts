@@ -9,19 +9,20 @@ export function onCameraMotion(camera,frame) {
 
 var lastEmailDate = null;
 
-function sendCameraMotionEmail(camera,frame) {
-	if(lastEmailDate && moment().diff(lastEmailDate,'s')<60) return false;
+function sendCameraMotionEmail(camera, frame) {
+	if(lastEmailDate && moment().diff(lastEmailDate,'s')<30) return false;
 
 	if(!config.mailer || !config.mailer.to) return false;
 
 	console.log('sendCameraMotionEmail: %j: %j', camera.name, frame.stats.motion);
 	lastEmailDate = new Date();
 
-	var html = 'Motion: ' + frame.stats.motion + '<br><br>';
+	var image = new Buffer(frame.image).toString('base64');
 
+	var html = 'Motion: ' + frame.stats.motion + '<br><br>';
 	html += `<img src="cid:image.jpg">`;
 
-	sendEmail({
+	return sendEmail({
 		to: config.mailer.to,
 		from: config.mailer.from,
 		subject: 'Sentry Camera Motion: ' + camera.name,
@@ -29,7 +30,7 @@ function sendCameraMotionEmail(camera,frame) {
 		attachments: [{
 			cid: 'cid:image.jpg',
 			filename: 'image.jpg',
-			path: `data:image/jpeg;base64,${frame.image}`
+			path: `data:image/jpeg;base64,${image}`
 		}]
 	});
 }

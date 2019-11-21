@@ -96,7 +96,7 @@ async function processFrame() {
 	stats.processed++;
 
 	var image = cv.imencode('.jpg', frame);
-	if(stats.avgMotion>0.1 && stats.processed%2===0) {
+	if(stats.avgMotion>0.1 && stats.processed%10===0) {
 		var isoDate = new Date().toISOString();
 		saveImage(`images/${isoDate}.jpg`, image);
 	}
@@ -106,7 +106,7 @@ async function processFrame() {
 	}
 
 
-	if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
+	timerHandle=setTimeout(processFrame, stats.delay);
 }
 
 

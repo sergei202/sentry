@@ -1,0 +1,17 @@
+<div class="row mt-5 justify-content-center">
+	<div class="col-sm-8 col-md-6 col-lg-4">
+		<div class="card w-100">
+			<form #form="ngForm" (submit)="login()" novalidate>
+				<div class="card-body">
+					<h5 class="card-title">Login</h5>
+					<input class="form-control form-control-lg top" placeholder="Username" name="username" [(ngModel)]="creds.username">
+					<input class="form-control form-control-lg bottom" type="password" placeholder="Password" name="password" [(ngModel)]="creds.password">
+					<div class="text-danger errors">
+						<span *ngIf="error">{{error}}</span>
+					</div>
+					<button type="submit" class="btn btn-lg btn-primary d-block mx-auto" [disabled]="!form.valid || busy">{{busy ? 'Logging in...':'Login'}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

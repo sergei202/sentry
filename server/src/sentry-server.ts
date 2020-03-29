@@ -4,10 +4,10 @@ import { config }					from './config';
 import { getVersionFromPackageJson}	from './lib/version';
 import { onCameraMotion }			from './ctrls/notifyCtrl';
 import * as fs						from 'fs';
+
 getVersionFromPackageJson().then(version => {
 	console.log('Sentry Server %s', version);
 });
-
 
 const server = http.createServer();
 const io = socketIo(server);
@@ -26,7 +26,7 @@ io.on('connection', socket => {
 	console.log('New connection: %j', socket.id);
 
 	socket.on('init', data => {
-		console.log('Init: %j', data);
+		console.log('init: %j', data);
 		connections.push({
 			... data,
 			id: socket.id
@@ -42,6 +42,7 @@ io.on('connection', socket => {
 		}
 	});
 
+
 	socket.on('config', config => {
 		var conn = getConnectionFromSocket(socket);
 		console.log('config: %j', config);
@@ -54,7 +55,7 @@ io.on('connection', socket => {
 		// console.log('%s: %j', conn.name, frame.stats);
 
 		if(frame.stats.avgMotion>=0.1) {
-			socket.emit('skip', 0);
+			socket.emit('skip', 1);
 
 			if(true) {
 				var isoDate = new Date().toISOString();
@@ -64,7 +65,7 @@ io.on('connection', socket => {
 			// onCameraMotion(conn,frame);
 		} else {
 			if(frame.stats.skip<10 && frame.stats.avgMotion<0.05) {
-				socket.emit('skip', 0);
+				socket.emit('skip', 10);
 				// console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
 			}
 		}
@@ -87,6 +88,25 @@ io.on('connection', socket => {
 		connections.splice(connections.map(c => c.id).indexOf(socket.id),1);
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
+	});
+
+	socket.on('user.login', creds => {
+		if(!config.users || !config.users.length) {
+			return socket.emit('user.login.error', {message:'No users defined on the server.'});
+		}
+		var user = config.users.find(u => u.username===creds.username);
+		if(!user) return socket.emit('user.login.error', {message:'User not found.'});
+		if(user.password!==creds.password) return socket.emit('user.login.error', {message:'Incorrect password.'});
+
+		socket['user'] = user;
+		socket.emit('user.login.result', user);
+		socket.emit('user.changed', user);
+
+
+	});
+
+	socket.on('user.check', () => {
+		socket.emit('user.check.result', socket['user']);
 	});
 });
 

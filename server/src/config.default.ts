@@ -4,5 +4,9 @@ export const config:any = {
 		postmark: 'POSTMARK_KEY',
 		from: 'sentry@mydomain.com',
 		to: 'me@gmail.com'
-	}
+	},
+
+	users: [
+		{name:'User',	username:'user',	password:'asdf'}
+	]
 };

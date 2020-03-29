@@ -1,48 +1,5 @@
 <div class="container">
 	<h1>Sentry Client</h1>
 
-	<div class="row">
-		<div class="col-sm-3">
-			<ul class="list-group">
-				<li class="list-group-item" *ngFor="let conn of connections">
-					<b>{{conn.type}}</b>
-					<span *ngIf="conn.name">: {{conn.name}}</span>
-				</li>
-			</ul>
-		</div>
-		<div class="col-sm-9">
-
-			<div *ngIf="sensors && sensors.length">
-				<div class="row">
-					<div class="col-sm" *ngFor="let sensor of sensors">
-						<div><b>{{sensor.name}}</b></div>
-						{{sensorValueLabel(sensor)}}
-					</div>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-sm" *ngFor="let camera of cameras">
-					<img class="img-thumbnail img-fluid" [src]="camera.src" *ngIf="camera.src" (click)="selectCamera(camera)">
-					<div>
-						<div class="float-right">
-							{{camera.stats.motion | percent}}
-						</div>
-						{{camera.name}}
-					</div>
-				</div>
-			</div>
-		</div>
-		<div *ngIf="selected">
-			<img class="img-thumbnail img-fluid" [src]="selected.src" *ngIf="selected.src" (click)="selectCamera(selected)">
-			<div>
-				<div class="float-right">
-					{{selected.stats.motion | percent}}
-				</div>
-				{{selected.name}}
-			</div>
-		</div>
-	</div>
-
-	<!-- <router-outlet></router-outlet> -->
+	<router-outlet></router-outlet>
 </div>

@@ -14,13 +14,14 @@ export class CameraListComponent {
 	sensors = [];
 
 	constructor(private socket:Socket, private domSanitizer:DomSanitizer) {
+
 		socket.on('connections', conns => {
 			console.log('connections = %o', conns);
 			this.connections = conns;
 			this.cameras = conns.filter(c => c.type==='camera');
 		});
 		socket.on('frame', frame => {
-			console.log('frame: %o', frame);
+			// console.log('frame: %o', frame);
 			// var delay = Date.now() - new Date(frame.date).getTime();
 			var camera = this.cameras.find(c => c.id===frame.conn.id);
 			if(camera) {

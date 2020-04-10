@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-camera-detail',
-  templateUrl: './camera-detail.component.html',
-  styleUrls: ['./camera-detail.component.scss']
+	selector: 'camera-detail',
+	templateUrl: './camera-detail.component.html',
+	styleUrls: ['./camera-detail.component.scss']
 })
 export class CameraDetailComponent implements OnInit {
+	@Input() camera;
 
-  constructor() { }
+	constructor() { }
 
-  ngOnInit() {
-  }
+	ngOnInit() {
+	}
 
 }

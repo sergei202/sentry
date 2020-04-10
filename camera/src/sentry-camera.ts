@@ -6,22 +6,10 @@ import { config }						from './config';
 import { getVersionFromPackageJson }	from './lib/version';
 import { detectMotion }					from './motion';
 
-getVersionFromPackageJson().then(version => {
-	console.log('Sentry Camera %s', version);
-	stats.version = version;
-});
-
-export const socket = socketIoClient(config.url);
-
-const video = new cv.VideoCapture(config.device || 0);
-if(config.width)  video.set(cv.CAP_PROP_FRAME_WIDTH,  config.width);
-if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
-
-var timerHandle;
 const stats = {
 	version: '',
-	delay: 10,
-	skip: 1,
+	delay: 100,
+	skip: 0,
 	processed: 0,
 	sent: 0,
 	rtt: 0,
@@ -36,6 +24,19 @@ const stats = {
 	sendFrameRate: 0
 };
 
+getVersionFromPackageJson().then(version => {
+	console.log('Sentry Camera %s', version);
+	stats.version = version;
+});
+
+export const socket = socketIoClient(config.url);
+
+const video = new cv.VideoCapture(config.device || 0);
+if(config.width)  video.set(cv.CAP_PROP_FRAME_WIDTH,  config.width);
+if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
+
+var timerHandle;
+
 socket.on('connect', () => {
 	console.log('Socket connected');
 	socket.emit('init', {type:'camera', name:config.name, stats});
@@ -46,7 +47,7 @@ socket.on('disconnect', () => {
 });
 
 socket.on('start', params => {
-	start(params.delay || 10);
+	start();
 });
 socket.on('stop', () => {
 	stop();
@@ -58,25 +59,25 @@ socket.on('skip', skip => {
 	stats.skip = skip;
 });
 
-var fpsTime = 5;
+var fpsTime = 1;
 
 function calcProcessFrameRate() {
 	var fps = (stats.processed - stats.processFrameCount)/fpsTime;
 	stats.processFrameCount = stats.processed;
 	stats.processFrameRate = fpsTime;
-	console.log('calcProcessFrameRate:\tfps=%o,\tstats.processed=%o,\tprocessFrameCount=%o', fps, stats.processed, stats.processFrameCount);
+	console.log('calcProcessFrameRate:\tfps=%o,\tstats.processed=%o,\tprocessFrameCount=%o,\tdelay=%o', fps, stats.processed, stats.processFrameCount, stats.delay);
 	setTimeout(() => calcProcessFrameRate(), fpsTime*1000);
 }
 function calcSendFrameRate() {
 	var fps = (stats.sent - stats.sendFrameCount)/fpsTime;
 	stats.sendFrameCount = stats.sent;
 	stats.sendFrameRate = fpsTime;
-	console.log('calcSendFrameRate:\tfps=%o,\tstats.sent=%o,\t\tsendFrameCount=%o', fps, stats.sent, stats.sendFrameCount);
+	console.log('calcSendFrameRate:\tfps=%o,\tstats.sent=%o,\t\tsendFrameCount=%o,\tskip=%o', fps, stats.sent, stats.sendFrameCount, stats.skip);
 	setTimeout(() => calcSendFrameRate(), fpsTime*1000);
 }
 
-calcProcessFrameRate();
-calcSendFrameRate();
+// calcProcessFrameRate();
+// calcSendFrameRate();
 
 async function processFrame() {
 	// console.log('processFrame()');
@@ -84,7 +85,7 @@ async function processFrame() {
 	var frame = await video.readAsync();
 	// console.timeEnd('video.readAsync');
 	if(!frame) {
-		if(stats.delay) timerHandle=setTimeout(processFrame, stats.delay);
+		timerHandle = setTimeout(processFrame, stats.delay);
 		return;
 	}
 
@@ -96,17 +97,16 @@ async function processFrame() {
 	stats.processed++;
 
 	var image = cv.imencode('.jpg', frame);
-	if(stats.avgMotion>0.1 && stats.processed%10===0) {
-		var isoDate = new Date().toISOString();
-		saveImage(`images/${isoDate}.jpg`, image);
-	}
+	// if(stats.avgMotion>0.1 && stats.processed%10===0) {
+	// 	var isoDate = new Date().toISOString();
+	// 	saveImage(`images/${isoDate}.jpg`, image);
+	// }
 
 	if(!stats.skip || stats.processed%stats.skip===0) {
 		sendFrame(image);
 	}
 
-
-	timerHandle=setTimeout(processFrame, stats.delay);
+	timerHandle = setTimeout(processFrame, stats.delay);
 }
 
 
@@ -132,8 +132,7 @@ function saveImage(path:string, image:Buffer) {
 }
 
 
-function start(delay) {
-	stats.delay = delay;
+function start() {
 	processFrame();
 }
 
@@ -142,5 +141,4 @@ function stop() {
 		clearTimeout(timerHandle);
 		timerHandle = null;
 	}
-	stats.delay = 0;
 }

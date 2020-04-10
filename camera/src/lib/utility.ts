@@ -14,9 +14,9 @@ export function serialPromise(items,func) {
 	}, Promise.resolve()).then(() => results);
 }
 
-export function readFile(path):Promise<string> {
+export function readFile(path:string):Promise<string> {
 	return new Promise((resolve,reject) => {
-		fs.readFile(path, 'utf8', (err,data) => {
+		fs.readFile(path, (err,data) => {
 			if(err) return reject(err);
 			resolve(data.toString());
 		});

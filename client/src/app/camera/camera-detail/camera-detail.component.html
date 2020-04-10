@@ -1,3 +1,8 @@
-<p>
-  camera-detail works!
-</p>
+<img class="img-thumbnail img-fluid" [src]="camera.src" *ngIf="camera.src">
+<div>
+	<div class="float-right">
+		{{camera.stats.motion | percent}}
+	</div>
+	{{camera.name}}
+</div>
+<pre>{{camera.stats | json}}</pre>

@@ -1,23 +1,29 @@
 import * as cv						from 'opencv4nodejs';
 
-const bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 92, true);
-
+const bgSubtractor = new cv.BackgroundSubtractorMOG2(250, 128, true);
 const dilateKernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(4, 4));
 const dilatePoint = new cv.Point2(-1, -1);
 
-export function detectMotion(image:cv.Mat):number {
-	const foreGroundMask = bgSubtractor.apply(image);
+const iterations = 2;
+const minPxSize = 1000;
 
-	const iterations = 2;
+export function detectMotion(image:cv.Mat):number {
+	// console.time('detectMotion diff');
+	const foreGroundMask = bgSubtractor.apply(image);
 	// const blurred = foreGroundMask.blur(new cv.Size(4, 4));
 	const dilated = foreGroundMask.dilate(dilateKernel, dilatePoint,iterations);
 	// const blurred = dilated.blur(new cv.Size(10, 10));
 	const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
-
-	const minPxSize = 2000;
-	drawRectAroundBlobs(thresholded, image, minPxSize);
-
 	var motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
+	// console.timeEnd('detectMotion diff');
+
+	if(motion>0.005) {
+		// console.time('detectMotion rect');
+		drawRectAroundBlobs(thresholded, image, minPxSize);
+		// console.timeEnd('detectMotion rect');
+	}
+	
+	console.log('motion: %o', motion);
 	return motion;
 }
 
@@ -36,7 +42,7 @@ function drawRectAroundBlobs(binaryImg:cv.Mat, dstImg:cv.Mat, minPxSize:number) 
 			y1 + stats.at(label, cv.CC_STAT_HEIGHT)
 		];
 		const size = stats.at(label, cv.CC_STAT_AREA);
-		rects.push({start:new cv.Point2(x1,y1), end:new cv.Point2(x2,y2), size});
+		if(size>minPxSize) rects.push({start:new cv.Point2(x1,y1), end:new cv.Point2(x2,y2), size});
 	}
 
 	rects = rects.sort((a,b) => b.size-a.size);

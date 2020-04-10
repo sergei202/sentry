@@ -14,11 +14,23 @@ export class CameraListComponent {
 	sensors = [];
 
 	constructor(private socket:Socket, private domSanitizer:DomSanitizer) {
+		socket.on('connect', () => {
+			console.log('Socket connected');
+			socket.emit('init', {
+				type: 'client',
+				name: 'Unknown'
+			});
+		});
+		socket.on('disconnect', () => {
+			console.log('Socket disconnected');
+			this.selected = null;
+		});
 
 		socket.on('connections', conns => {
 			console.log('connections = %o', conns);
 			this.connections = conns;
 			this.cameras = conns.filter(c => c.type==='camera');
+			if(this.cameras.indexOf(this.selected)===-1) this.selected = null;
 		});
 		socket.on('frame', frame => {
 			// console.log('frame: %o', frame);
@@ -31,13 +43,13 @@ export class CameraListComponent {
 			}
 		});
 
-		socket.on('sensors', sensors => {
-			this.sensors = sensors;
-			console.log('sensors: %o', sensors);
-		});
-		socket.on('sensor', sensor => {
-			console.log('sensor: %o', sensor);
-		});
+		// socket.on('sensors', sensors => {
+		// 	this.sensors = sensors;
+		// 	console.log('sensors: %o', sensors);
+		// });
+		// socket.on('sensor', sensor => {
+		// 	console.log('sensor: %o', sensor);
+		// });
 	}
 
 	selectCamera(camera) {

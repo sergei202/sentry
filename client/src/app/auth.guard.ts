@@ -8,12 +8,12 @@ import { UserService } from './services/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
-	constructor(private router:Router, private userService:UserService) {
-		console.log('AuthGuard()');
-	}
+	constructor(private router:Router, private userService:UserService) { }
 
 	async authCheck(route:ActivatedRouteSnapshot, state:RouterStateSnapshot):Promise<boolean> {
 		console.log('authCheck() %o', this.userService.user);
+
+		return true;
 
 		if(!this.userService.user) {
 			this.userService.redirect = state.url;

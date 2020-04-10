@@ -28,17 +28,18 @@ io.on('connection', socket => {
 	socket.on('init', data => {
 		console.log('init: %j', data);
 		connections.push({
-			... data,
+			...data,
 			id: socket.id
 		});
 		socket.join(data.type);
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 		if(data.type==='camera') {
-			socket.emit('start', {delay:0, skip:0});
+			socket.emit('start');
+			socket.emit('delay', 500);
 		}
 		if(data.type==='client') {
-			socket.emit('sensors', sensors);
+			// socket.emit('sensors', sensors);
 		}
 	});
 
@@ -55,9 +56,9 @@ io.on('connection', socket => {
 		// console.log('%s: %j', conn.name, frame.stats);
 
 		if(frame.stats.avgMotion>=0.1) {
-			socket.emit('skip', 1);
+			// socket.emit('skip', 5);
 
-			if(true) {
+			if(false) {
 				var isoDate = new Date().toISOString();
 				saveImage(`images/${isoDate}.jpg`, frame.image);
 			}
@@ -65,7 +66,7 @@ io.on('connection', socket => {
 			// onCameraMotion(conn,frame);
 		} else {
 			if(frame.stats.skip<10 && frame.stats.avgMotion<0.05) {
-				socket.emit('skip', 10);
+				// socket.emit('skip', 20);
 				// console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
 			}
 		}
@@ -84,8 +85,10 @@ io.on('connection', socket => {
 	});
 
 	socket.on('disconnect', () => {
-		console.log('Disconnected: %j', socket.id);
-		connections.splice(connections.map(c => c.id).indexOf(socket.id),1);
+		var conn = getConnectionFromSocket(socket);
+		console.log('Disconnected: %o', conn ? {type:conn.type, name:conn.name, id:conn.id} : socket.id);
+		let index = connections.map(c => c.id).indexOf(socket.id);
+		if(index!==-1) connections.splice(index,1);
 		io.emit('connections', connections);
 		console.log('connections: %j', connections.length);
 	});

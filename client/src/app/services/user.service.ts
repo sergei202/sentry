@@ -8,7 +8,7 @@ export class UserService {
 	user:any;
 	redirect:string;
 
-	constructor(private socket:Socket) {
+	constructor(public socket:Socket) {
 		console.log('AuthGuard()');
 		this.socket.on('user.changed', d => this.onUserChanged(d));
 	}

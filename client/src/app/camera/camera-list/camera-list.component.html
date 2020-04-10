@@ -8,18 +8,17 @@
 		</ul>
 	</div>
 	<div class="col-sm-9">
-
-		<div *ngIf="sensors && sensors.length">
+		<!-- <div *ngIf="sensors && sensors.length">
 			<div class="row">
 				<div class="col-sm" *ngFor="let sensor of sensors">
 					<div><b>{{sensor.name}}</b></div>
 					{{sensorValueLabel(sensor)}}
 				</div>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="row">
-			<div class="col-sm" *ngFor="let camera of cameras">
+			<div class="col-sm-4" *ngFor="let camera of cameras">
 				<img class="img-thumbnail img-fluid" [src]="camera.src" *ngIf="camera.src" (click)="selectCamera(camera)">
 				<div>
 					<div class="float-right">
@@ -31,12 +30,6 @@
 		</div>
 	</div>
 	<div *ngIf="selected">
-		<img class="img-thumbnail img-fluid" [src]="selected.src" *ngIf="selected.src" (click)="selectCamera(selected)">
-		<div>
-			<div class="float-right">
-				{{selected.stats.motion | percent}}
-			</div>
-			{{selected.name}}
-		</div>
+		<camera-detail [camera]="selected"></camera-detail>
 	</div>
 </div>

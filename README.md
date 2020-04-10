@@ -27,7 +27,7 @@ If you are installing the camera part on a Raspberry Pi:
 - `cp -r node-v10.15.1-linux-armv6l/* /usr/local/`
 
 #### Typescript and Friends
-- `sudo npm install -g typescript ts-node pm2`
+- `sudo npm install -g typescript ts-node nodemon pm2`
 
 #### Camera
 You'll need to install the dependencies for OpenCV:

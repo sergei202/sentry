@@ -36,8 +36,8 @@ function drawRectAroundBlobs(binaryImg:cv.Mat, dstImg:cv.Mat, minPxSize:number) 
 
 	// pretend label 0 is background
 	for(let label=1; label<centroids.rows; label+=1) {
-		const [x1, y1] = [stats.at(label, cv.CC_STAT_LEFT), stats.at(label, cv.CC_STAT_TOP)];
-		const [x2, y2] = [
+		const [x1,y1] = [stats.at(label,cv.CC_STAT_LEFT), stats.at(label,cv.CC_STAT_TOP)];
+		const [x2,y2] = [
 			x1 + stats.at(label, cv.CC_STAT_WIDTH),
 			y1 + stats.at(label, cv.CC_STAT_HEIGHT)
 		];

@@ -55,7 +55,7 @@ io.on('connection', socket => {
 
 		// console.log('%s: %j', conn.name, frame.stats);
 
-		if(frame.stats.avgMotion>=0.03 && frame.stats.delay!==500) {
+		if(frame.stats.avgMotion>=0.01 && frame.stats.delay!==500) {
 			socket.emit('delay', 500);
 
 			if(false) {
@@ -65,10 +65,10 @@ io.on('connection', socket => {
 
 			// onCameraMotion(conn,frame);
 		} else {
-			if(frame.stats.avgMotion<0.03 && frame.stats.avgMotion>=0.005 && frame.stats.delay!==1000) {
+			if(frame.stats.avgMotion>0.001 && frame.stats.avgMotion>=0.005 && frame.stats.delay!==1000) {
 				socket.emit('delay', 1000);
 				// console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
-			} else if(frame.stats.avgMotion<0.005 && frame.stats.delay!==2000) {
+			} else if(frame.stats.avgMotion<0.00 && frame.stats.delay!==2000) {
 				socket.emit('delay', 2000);
 			}
 		}
@@ -95,6 +95,7 @@ io.on('connection', socket => {
 		console.log('connections: %j', connections.length);
 	});
 
+
 	socket.on('user.login', creds => {
 		if(!config.users || !config.users.length) {
 			return socket.emit('user.login.error', {message:'No users defined on the server.'});
@@ -106,12 +107,15 @@ io.on('connection', socket => {
 		socket['user'] = user;
 		socket.emit('user.login.result', user);
 		socket.emit('user.changed', user);
-
-
 	});
-
 	socket.on('user.check', () => {
 		socket.emit('user.check.result', socket['user']);
+	});
+
+	socket.on('mic', chunk => {
+		var conn = getConnectionFromSocket(socket);
+		var volume = getSoundVolume(chunk);
+		socket.volatile.in('client').emit('mic', {conn,volume,chunk});
 	});
 });
 
@@ -129,3 +133,77 @@ function saveImage(path:string, image:Buffer) {
 		});
 	});
 }
+
+/*
+const Speaker = require('speaker');
+import * as Stream from 'stream';
+
+const speakerInstance = new Speaker({ // | aplay -D plughw:CARD=0,DEV=0
+	channels: 1,
+	bitDepth: 16,
+	sampleRate: 44100,
+	signed: true,
+    // device: 'plughw:2,0' //'plughw:NVidia,7'
+})
+speakerInstance.on('open', () => {
+	console.log('speakerInstance opened');
+	// micStream.pipe(speakerInstance);
+});
+speakerInstance.on('error', err => {
+	console.log('speakerInstance error: %o', err);
+});
+
+class MicStream extends Stream.Readable {
+	constructor(options?:any) {
+		super(options);
+		console.log('MicStream()');
+	}
+
+	_read(size:number) {
+		console.log('MicStream.read() size=%o', size);
+	}
+}
+
+const micStream = new MicStream();
+
+// micStream.pipe(process.stdout);
+
+// var count = 0;
+// setInterval(() => {
+// 	micStream.emit('data',Buffer.from((count++).toString()));
+// }, 500);
+
+
+// micStream.pipe(process.stdout);
+
+micStream.on('data', data => {
+	// console.log('micStream data=%o', data);
+	var volume = getSoundVolume(data);
+	io.emit('volume', volume);
+});
+
+console.log('started');
+
+micStream.pipe(speakerInstance);
+
+*/
+
+function getSoundVolume(chunk) {
+	var sample = 0;
+	var maxVolume = 0;
+	for(var i=0; i<chunk.length; i=i+2) {
+		if(chunk[i+1] > 128) {
+			sample = (chunk[i+1] - 256) * 256;
+		} else {
+			sample = chunk[i+1] * 256;
+		}
+		sample += chunk[i];
+
+		var volume = Math.abs(sample)/32768;
+		if(volume>maxVolume) maxVolume=volume;
+	}
+	if(maxVolume>1) maxVolume = 1;
+	// console.log('sound volume: %o', maxVolume);
+	return maxVolume;
+}
+

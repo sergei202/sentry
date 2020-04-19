@@ -1,6 +1,6 @@
 {
   "name": "sentry-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Sentry server.",
   "main": "./src/sentry-server.ts",
   "scripts": {
@@ -8,6 +8,7 @@
     "node": "node ./dist/sentry-server.js",
     "serve": "npm run build:live",
     "build:live": "nodemon --exec ts-node -- ./src/sentry-server.ts",
+    "debug": "node -r ts-node/register --inspect src/sentry-server.ts",
     "build": "tsc",
     "test": "jest",
     "lint": "tslint -c tslint.json 'src/**/*.ts'"
@@ -25,6 +26,11 @@
     "nodemailer": "^5.1.1",
     "nodemailer-postmark-transport": "^2.2.0",
     "socket.io": "^2.3.0",
-    "socketio-auth": "^0.1.1"
+    "socketio-auth": "^0.1.1",
+    "speaker": "^0.5.1"
+  },
+  "devDependencies": {
+    "ts-node": "^8.8.2",
+    "typescript": "^3.8.3"
   }
 }

@@ -1,6 +1,6 @@
 import * as cv						from 'opencv4nodejs';
 
-const bgSubtractor = new cv.BackgroundSubtractorMOG2(250, 128, true);
+const bgSubtractor = new cv.BackgroundSubtractorMOG2(500, 128, true);
 const dilateKernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(4, 4));
 const dilatePoint = new cv.Point2(-1, -1);
 
@@ -22,8 +22,8 @@ export function detectMotion(image:cv.Mat):number {
 		drawRectAroundBlobs(thresholded, image, minPxSize);
 		// console.timeEnd('detectMotion rect');
 	}
-	
-	console.log('motion: %o', motion);
+
+	if(motion) console.log('motion: %o', motion);
 	return motion;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "sentry-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config=proxy-config.json --port 8000 --host 0.0.0.0",

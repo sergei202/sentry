@@ -9,7 +9,7 @@ getVersionFromPackageJson().then(version => {
 
 export const socket = socketIoClient(config.url);
 
-dhtSensor.initialize({
+if(config.fake) dhtSensor.initialize({
 	test: {
 		fake: {
 			temperature: 21,
@@ -62,13 +62,14 @@ async function readSensors() {
 		value: dht.humidity
 	}];
 
+	console.log('sensors: %o', sensors);
 	socket.emit('sensors', sensors);
 	timerHandle = setTimeout(readSensors, config.delay);
 }
 
 function readDht() {
 	return dhtSensor.promises.read(22,4).then(result => {
-		console.log('dhtSensor: %o', result);
+		// console.log('dhtSensor: %o', result);
 		return result;
 	}, err => {
 		console.log('dhtSensor error: %o', err);

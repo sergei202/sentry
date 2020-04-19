@@ -75,9 +75,9 @@ io.on('connection', socket => {
 		if(ack) ack();
 	});
 
-	socket.on('sensors', sens => {
-		socket.volatile.in('client').emit('sensors', sens);
-		sensors = sens;
+	socket.on('sensors', sensors => {
+		socket.volatile.in('client').emit('sensors', sensors);
+		sensors = sensors;
 		console.log('sensors: %j', sensors);
 	});
 	socket.on('sensor', sensor => {

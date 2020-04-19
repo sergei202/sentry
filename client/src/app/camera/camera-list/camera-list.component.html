@@ -8,14 +8,15 @@
 		</ul>
 	</div>
 	<div class="col-sm-9">
-		<!-- <div *ngIf="sensors && sensors.length">
+		<div *ngIf="sensors && sensors.length">
 			<div class="row">
 				<div class="col-sm" *ngFor="let sensor of sensors">
 					<div><b>{{sensor.name}}</b></div>
-					{{sensorValueLabel(sensor)}}
+					{{sensor.value}}
+					<!-- {{sensorValueLabel(sensor)}} -->
 				</div>
 			</div>
-		</div> -->
+		</div>
 
 		<div class="row">
 			<div class="col-sm-4" *ngFor="let camera of cameras">

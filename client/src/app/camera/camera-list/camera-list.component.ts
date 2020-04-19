@@ -44,13 +44,10 @@ export class CameraListComponent {
 			}
 		});
 
-		// socket.on('sensors', sensors => {
-		// 	this.sensors = sensors;
-		// 	console.log('sensors: %o', sensors);
-		// });
-		// socket.on('sensor', sensor => {
-		// 	console.log('sensor: %o', sensor);
-		// });
+		socket.on('sensors', sensors => {
+			this.sensors = sensors;
+			console.log('sensors: %o', sensors);
+		});
 
 		socket.on('mic', async data => {
 			var camera = this.cameras.find(c => c.id===data.conn.id);
@@ -86,13 +83,6 @@ export class CameraListComponent {
 				return sensor.value;
 		}
 	}
-
-	 getAudioContext() {
-		AudioContext = window.AudioContext;
-		const audioContext = new AudioContext();
-		const analyser = audioContext.createAnalyser();
-		return { audioContext, analyser };
-	};
 }
 
 

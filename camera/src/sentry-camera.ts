@@ -194,7 +194,7 @@ function getSoundVolume(chunk) {
 		if(volume>maxVolume) maxVolume=volume;
 	}
 	if(maxVolume>1) maxVolume = 1;
-	console.log('volume: %o', maxVolume);
+	if(maxVolume>0.5) console.log('volume: %o', maxVolume);
 	return maxVolume;
 }
 

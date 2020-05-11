@@ -8,23 +8,28 @@ const iterations = 2;
 const minPxSize = 1000;
 
 export function detectMotion(image:cv.Mat):number {
-	// console.time('detectMotion diff');
-	const foreGroundMask = bgSubtractor.apply(image);
-	// const blurred = foreGroundMask.blur(new cv.Size(4, 4));
-	const dilated = foreGroundMask.dilate(dilateKernel, dilatePoint,iterations);
-	// const blurred = dilated.blur(new cv.Size(10, 10));
-	const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
-	var motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
-	// console.timeEnd('detectMotion diff');
+	try {
+		// console.time('detectMotion diff');
+		const foreGroundMask = bgSubtractor.apply(image);
+		// const blurred = foreGroundMask.blur(new cv.Size(4, 4));
+		const dilated = foreGroundMask.dilate(dilateKernel, dilatePoint,iterations);
+		// const blurred = dilated.blur(new cv.Size(10, 10));
+		const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
+		var motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
+		// console.timeEnd('detectMotion diff');
 
-	if(motion>0.005) {
-		// console.time('detectMotion rect');
-		drawRectAroundBlobs(thresholded, image, minPxSize);
-		// console.timeEnd('detectMotion rect');
+		if(motion>0.005) {
+			// console.time('detectMotion rect');
+			drawRectAroundBlobs(thresholded, image, minPxSize);
+			// console.timeEnd('detectMotion rect');
+		}
+
+		if(motion>0.1) console.log('motion: %o', motion);
+		return motion;
+	} catch(err) {
+		console.error('detectMotion() caught exception: %o', err.stack || err);
+		return 0;
 	}
-
-	if(motion) console.log('motion: %o', motion);
-	return motion;
 }
 
 const red = new cv.Vec3(0,0,255);

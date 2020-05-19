@@ -90,8 +90,10 @@ async function processFrame() {
 			return;
 		}
 
-		stats.motion = detectMotion(frame);
-		stats.avgMotion = (stats.motion+stats.avgMotion)/2;
+		if(config.detectMotion) {
+			stats.motion = detectMotion(frame);
+			stats.avgMotion = (stats.motion+stats.avgMotion)/2;
+		}
 
 		var date = new Date().toLocaleString();
 		frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);

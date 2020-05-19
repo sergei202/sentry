@@ -3,5 +3,6 @@ export const config:any = {
 	width: 1024,
 	height: 768,
 	url: 'http://localhost:7000',
-	name: 'Unnamed Camera'
-};
+	name: 'Unnamed Camera',
+	detectMotion: true
+}

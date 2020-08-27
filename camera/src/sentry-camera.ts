@@ -82,31 +82,39 @@ socket.on('skip', skip => {
 async function processFrame() {
 	// console.log('processFrame()');
 	// console.time('video.readAsync');
-	var frame = await video.readAsync();
-	// console.timeEnd('video.readAsync');
-	if(!frame) {
+	try {
+		var frame = await video.readAsync();
+		// console.timeEnd('video.readAsync');
+		if(!frame) {
+			timerHandle = setTimeout(processFrame, stats.delay);
+			return;
+		}
+
+		if(config.detectMotion) {
+			stats.motion = detectMotion(frame);
+			stats.avgMotion = (stats.motion+stats.avgMotion)/2;
+		}
+
+		var date = new Date().toLocaleString();
+		frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);
+		stats.processed++;
+
+		var image = cv.imencode('.jpg', frame);
+		// if(stats.avgMotion>0.1 && stats.processed%10===0) {
+		// 	var isoDate = new Date().toISOString();
+		// 	saveImage(`images/${isoDate}.jpg`, image);
+		// }
+
+		if(!stats.skip || stats.processed%stats.skip===0) {
+			sendFrame(image);
+		}
+
 		timerHandle = setTimeout(processFrame, stats.delay);
-		return;
 	}
-
-	stats.motion = detectMotion(frame);
-	stats.avgMotion = (stats.motion+stats.avgMotion)/2;
-
-	var date = new Date().toLocaleString();
-	frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);
-	stats.processed++;
-
-	var image = cv.imencode('.jpg', frame);
-	// if(stats.avgMotion>0.1 && stats.processed%10===0) {
-	// 	var isoDate = new Date().toISOString();
-	// 	saveImage(`images/${isoDate}.jpg`, image);
-	// }
-
-	if(!stats.skip || stats.processed%stats.skip===0) {
-		sendFrame(image);
+	catch(err) {
+		console.log('processFrame() Caught error: %o', err.stack || err);
+		timerHandle = setTimeout(processFrame, stats.delay*10);
 	}
-
-	timerHandle = setTimeout(processFrame, stats.delay);
 }
 
 
@@ -194,7 +202,7 @@ function getSoundVolume(chunk) {
 		if(volume>maxVolume) maxVolume=volume;
 	}
 	if(maxVolume>1) maxVolume = 1;
-	console.log('volume: %o', maxVolume);
+	if(maxVolume>0.5) console.log('volume: %o', maxVolume);
 	return maxVolume;
 }
 

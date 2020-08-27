@@ -23,7 +23,7 @@ export function detectMotion(image:cv.Mat):number {
 		// console.timeEnd('detectMotion rect');
 	}
 
-	if(motion) console.log('motion: %o', motion);
+	if(motion>0.1) console.log('motion: %o', motion);
 	return motion;
 }
 

@@ -58,9 +58,9 @@ io.on('connection', socket => {
 		if(frame.stats.avgMotion>=0.01 && frame.stats.delay!==500) {
 			socket.emit('delay', 500);
 
-			if(false) {
+			if(true) {
 				var isoDate = new Date().toISOString();
-				saveImage(`images/${isoDate}.jpg`, frame.image);
+				saveImage(`images/${conn.name}-${isoDate}.jpg`, frame.image);
 			}
 
 			// onCameraMotion(conn,frame);

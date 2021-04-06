@@ -26,8 +26,7 @@
     "nodemailer": "^5.1.1",
     "nodemailer-postmark-transport": "^2.2.0",
     "socket.io": "^2.3.0",
-    "socketio-auth": "^0.1.1",
-    "speaker": "^0.5.1"
+    "socketio-auth": "^0.1.1"
   },
   "devDependencies": {
     "ts-node": "^8.8.2",

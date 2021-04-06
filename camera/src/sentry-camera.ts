@@ -8,8 +8,8 @@ import { getVersionFromPackageJson }	from './lib/version';
 import { detectMotion }					from './motion';
 
 const stats = {
-	version: '',
-	delay: 100,
+	version: getVersionFromPackageJson(),
+	delay: 1000,
 	skip: 0,
 	processed: 0,
 	sent: 0,
@@ -18,6 +18,8 @@ const stats = {
 	motion: 0,
 	avgMotion: 0,
 
+	micVolume: 0
+
 	// processFrameCount: 0,
 	// processFrameRate: 0,
 
@@ -25,10 +27,9 @@ const stats = {
 	// sendFrameRate: 0
 };
 
-getVersionFromPackageJson().then(version => {
-	console.log('Sentry Camera %s', version);
-	stats.version = version;
-});
+
+console.log('Sentry Camera %s', stats.version);
+
 
 export const socket = socketIoClient(config.url);
 
@@ -36,7 +37,7 @@ const video = new cv.VideoCapture(config.device || 0);
 if(config.width)  video.set(cv.CAP_PROP_FRAME_WIDTH,  config.width);
 if(config.height) video.set(cv.CAP_PROP_FRAME_HEIGHT, config.height);
 
-var timerHandle;
+let timerHandle;
 
 socket.on('connect', () => {
 	console.log('Socket connected');
@@ -83,7 +84,7 @@ async function processFrame() {
 	// console.log('processFrame()');
 	// console.time('video.readAsync');
 	try {
-		var frame = await video.readAsync();
+		const frame = await video.readAsync();
 		// console.timeEnd('video.readAsync');
 		if(!frame) {
 			timerHandle = setTimeout(processFrame, stats.delay);
@@ -95,11 +96,11 @@ async function processFrame() {
 			stats.avgMotion = (stats.motion+stats.avgMotion)/2;
 		}
 
-		var date = new Date().toLocaleString();
+		const date = new Date().toLocaleString();
 		frame.putText(date, new cv.Point2(0,20), 0, 0.5, new cv.Vec3(255,0,0), 0);
 		stats.processed++;
 
-		var image = cv.imencode('.jpg', frame);
+		const image = cv.imencode('.jpg', frame);
 		// if(stats.avgMotion>0.1 && stats.processed%10===0) {
 		// 	var isoDate = new Date().toISOString();
 		// 	saveImage(`images/${isoDate}.jpg`, image);
@@ -120,13 +121,14 @@ async function processFrame() {
 
 function sendFrame(image:Buffer) {
 	// console.log('sendFrame()');
-	var date = new Date();
+	const date = new Date();
 	stats.uptime = process.uptime();
 	// stats.load = process.load
 	socket.emit('frame', {image,date,stats}, () => {
-		var rtt = Date.now()-date.getTime();
+		const rtt = Date.now()-date.getTime();
 		stats.rtt = (stats.rtt+rtt)/2
 		stats.sent++;
+		stats.micVolume = 0;
 	});
 }
 
@@ -141,8 +143,8 @@ function saveImage(path:string, image:Buffer) {
 }
 
 
-const micInstance = mic({ // arecord -D hw:0,0 -f S16_LE -r 44100 -c 2
-	// device: 'hw:0,0',           //   -D hw:0,0
+let micInstance = mic({ // arecord -D hw:0,0 -f S16_LE -r 44100 -c 2
+	device: config.micDevice || undefined,
 	encoding: 'signed-integer', //             -f S
 	bitwidth: '16',             //                 16
 	endian: 'little',           //                   _LE
@@ -152,6 +154,16 @@ const micInstance = mic({ // arecord -D hw:0,0 -f S16_LE -r 44100 -c 2
 })
 const micInputStream = micInstance.getAudioStream();
 micInstance.start();
+
+micInputStream.on('data', data => {
+	console.log('Recieved Input Stream: %o', data.length);
+	const volume = getSoundVolume(data);
+	if(volume>stats.micVolume) stats.micVolume = volume;
+	if(volume>0.5) socket.emit('mic', data);
+});
+micInputStream.on('error', err => {
+	console.log('Error in micInputStream: %o', err);
+});
 
 
 function start() {
@@ -171,26 +183,10 @@ function stop() {
 
 
 
-
-
-
-
-
-micInputStream.on('data', data => {
-	// console.log('Recieved Input Stream: %o', data.length);
-	getSoundVolume(data);
-	socket.emit('mic', data);
-});
-micInputStream.on('error', err => {
-	console.log("Error in Input Stream: " + err)
-});
-
-
-
 function getSoundVolume(chunk) {
-	var sample = 0;
-	var maxVolume = 0;
-	for(var i=0; i<chunk.length; i=i+2) {
+	let sample = 0;
+	let maxVolume = 0;
+	for(let i=0; i<chunk.length; i=i+2) {
 		if(chunk[i+1] > 128) {
 			sample = (chunk[i+1] - 256) * 256;
 		} else {
@@ -198,7 +194,7 @@ function getSoundVolume(chunk) {
 		}
 		sample += chunk[i];
 
-		var volume = Math.abs(sample)/32768;
+		let volume = Math.abs(sample)/32768;
 		if(volume>maxVolume) maxVolume=volume;
 	}
 	if(maxVolume>1) maxVolume = 1;

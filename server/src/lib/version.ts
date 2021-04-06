@@ -1,8 +1,8 @@
-import { readFile } from './utility';
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-export async function getVersionFromPackageJson(path='../../package.json'):Promise<string> {
-	var file = await readFile(resolve(__dirname,path));
-	var json = JSON.parse(file);
+export function getVersionFromPackageJson(path='package.json'):string {
+	const file = readFileSync(resolve(__dirname, '../..', path), 'UTF8').toString();
+	const json = JSON.parse(file);
 	return `v${json.version}`;
 }

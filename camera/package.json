@@ -1,6 +1,6 @@
 {
   "name": "sentry-camera",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Sentry camera/sensor.",
   "main": "./src/sentry-camera.ts",
   "scripts": {
@@ -24,7 +24,6 @@
     "mic": "^2.1.2",
     "moment": "^2.24.0",
     "opencv4nodejs": "^5.2.0",
-    "socket.io-client": "^2.3.0",
-    "speaker": "^0.5.1"
+    "socket.io-client": "^2.3.0"
   }
 }

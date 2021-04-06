@@ -5,4 +5,4 @@ export const config:any = {
 	url: 'http://localhost:7000',
 	name: 'Unnamed Camera',
 	detectMotion: true
-}
+};

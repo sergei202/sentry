@@ -14,7 +14,7 @@ export function detectMotion(image:cv.Mat):number {
 	const dilated = foreGroundMask.dilate(dilateKernel, dilatePoint,iterations);
 	// const blurred = dilated.blur(new cv.Size(10, 10));
 	const thresholded = dilated.threshold(128, 255, cv.THRESH_BINARY);
-	var motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
+	const motion = thresholded.countNonZero() / (image.sizes[0]*image.sizes[1]);
 	// console.timeEnd('detectMotion diff');
 
 	if(motion>0.005) {
@@ -32,7 +32,7 @@ const red = new cv.Vec3(0,0,255);
 function drawRectAroundBlobs(binaryImg:cv.Mat, dstImg:cv.Mat, minPxSize:number) {
 	const {centroids,stats} = binaryImg.connectedComponentsWithStats();
 
-	var rects = [];		// {start,end,size}
+	let rects = [];		// {start,end,size}
 
 	// pretend label 0 is background
 	for(let label=1; label<centroids.rows; label+=1) {

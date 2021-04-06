@@ -24,21 +24,24 @@ export class CameraListComponent {
 		});
 		socket.on('disconnect', () => {
 			console.log('Socket disconnected');
-			this.selected = null;
+			// if(this.cameras.indexOf(this.selected)===-1) this.selected = null;
 		});
 
 		socket.on('connections', conns => {
 			console.log('connections = %o', conns);
 			this.connections = conns;
+			const selectedName = this.selected && this.selected.name;
 			this.cameras = conns.filter(c => c.type==='camera');
-			if(this.cameras.indexOf(this.selected)===-1) this.selected = null;
+			if(this.cameras.indexOf(this.selected)===-1) {
+				this.selected = this.cameras.find(c => c.name===selectedName);
+			}
 		});
 		socket.on('frame', frame => {
 			// console.log('frame: %o', frame);
 			// var delay = Date.now() - new Date(frame.date).getTime();
-			var camera = this.cameras.find(c => c.id===frame.conn.id);
+			const camera = this.cameras.find(c => c.id===frame.conn.id);
 			if(camera) {
-				var blob = new Blob([frame.image], {type:'image/jpeg'});
+				const blob = new Blob([frame.image], {type:'image/jpeg'});
 				camera.src = this.domSanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
 				camera.stats = frame.stats;
 			}
@@ -50,14 +53,14 @@ export class CameraListComponent {
 		});
 
 		socket.on('mic', async data => {
-			var camera = this.cameras.find(c => c.id===data.conn.id);
+			const camera = this.cameras.find(c => c.id===data.conn.id);
 			if(camera) {
 				// console.log('%o: volume=%o', camera.name, data.volume);
 				camera.volume = data.volume;
 
 				const audioBufferChunk = await this.audioContext.decodeAudioData(withWaveHeader(data.chunk, 1, 44100));
 
-				var source = this.audioContext.createBufferSource();
+				const source = this.audioContext.createBufferSource();
 				source.buffer = audioBufferChunk;
 				source.connect(this.audioContext.destination);
 				source.start();

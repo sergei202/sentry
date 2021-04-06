@@ -7,7 +7,7 @@ Sentry is a NodeJS security system.  It is divided into separate 3 module:
 
 ## Install
 
-The default configs will let you run all three modules on a single machine and pay with it.
+The default configs will let you run all three modules on a single machine and play with it.
 
 ### Camera Module
 - NodeJS
@@ -22,16 +22,16 @@ The default configs will let you run all three modules on a single machine and p
 If you are installing the camera part on a Raspberry Pi:
 
 #### Install NodeJS
-- `wget https://nodejs.org/dist/v10.15.1/node-v10.15.1-linux-armv6l.tar.gzz`
-- `tar -xzf node-v10.15.1-linux-armv6l.tar.gz`
-- `cp -r node-v10.15.1-linux-armv6l/* /usr/local/`
+- `wget https://nodejs.org/dist/v14.16.0/node-v14.16.0-linux-armv7l.tar.gz`
+- `tar -xzf node-v14.16.0-linux-armv7l.tar.gz`
+- `sudo cp -r node-v14.16.0-linux-armv7l/* /usr/local/`
 
 #### Typescript and Friends
 - `sudo npm install -g typescript ts-node nodemon pm2`
 
 #### Camera
 You'll need to install the dependencies for OpenCV:
-`sudo apt install cmake build-essential unzip pkg-config libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libcanberra-gtk* libatlas-base-dev gfortran`
+`sudo apt install cmake build-essential unzip pkg-config libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libcanberra-gtk* libatlas-base-dev gfortran libasound2-dev`
 
 
 If you are using a Raspberry Pi camera: `sudo modprobe bcm2835-v4l2`

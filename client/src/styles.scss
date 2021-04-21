@@ -1,1 +1,14 @@
-/* You can add global styles to this file, and also import other style files */
+$body-bg: #000;
+$body-color: #888;
+
+body,html, app-root, ul, li {
+	background-color: black !important;
+	color: #777 !important;
+}
+img.img-thumbnail {
+	border: 1px solid #333;
+	background-color: #333 !important;
+}
+
+// Bootstrap and its default variables
+@import 'node_modules/bootstrap/scss/bootstrap';

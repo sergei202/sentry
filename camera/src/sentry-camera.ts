@@ -55,9 +55,11 @@ socket.on('stop', () => {
 	stop();
 });
 socket.on('delay', delay => {
+	console.log('Setting delay=%o', delay);
 	stats.delay = delay;
 });
 socket.on('skip', skip => {
+	console.log('Setting skip=%o', skip);
 	stats.skip = skip;
 });
 
@@ -156,7 +158,7 @@ const micInputStream = micInstance.getAudioStream();
 micInstance.start();
 
 micInputStream.on('data', data => {
-	console.log('Recieved Input Stream: %o', data.length);
+	// console.log('Recieved Input Stream: %o', data.length);
 	const volume = getSoundVolume(data);
 	if(volume>stats.micVolume) stats.micVolume = volume;
 	if(volume>0.5) socket.emit('mic', data);

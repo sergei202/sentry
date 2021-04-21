@@ -56,8 +56,8 @@ io.on('connection', socket => {
 
 		// console.log('%s: %j', conn.name, frame.stats);
 
-		if(frame.stats.avgMotion>=0.01 && frame.stats.delay!==500) {
-			socket.emit('delay', 500);
+		if(frame.stats.avgMotion>=0.1) {
+			if(frame.stats.delay!==500) socket.emit('delay', 500);
 
 			if(true) {
 				const now = new Date();
@@ -70,11 +70,10 @@ io.on('connection', socket => {
 
 			// onCameraMotion(conn,frame);
 		} else {
-			if(frame.stats.avgMotion>0.001 && frame.stats.avgMotion>=0.005 && frame.stats.delay!==1000) {
-				socket.emit('delay', 1000);
-				// console.log('avgMotion=%j, setting skip=10', frame.stats.avgMotion);
-			} else if(frame.stats.avgMotion<0.00 && frame.stats.delay!==2000) {
-				socket.emit('delay', 2000);
+			if(frame.stats.avgMotion>=0.01) {
+				if(frame.stats.delay!==1000) socket.emit('delay', 1000);
+			} else if(frame.stats.avgMotion<0.01) {
+				if(frame.stats.delay!==2000) socket.emit('delay', 2000);
 			}
 		}
 		if(ack) ack();

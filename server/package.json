@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@types/socket.io": "^2.1.4",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "nodemailer": "^5.1.1",
     "nodemailer-postmark-transport": "^2.2.0",
     "socket.io": "^2.3.0",
